@@ -2,9 +2,9 @@ name: Build Windows Executable
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   release:
     types: [created]
 
@@ -13,10 +13,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: 3.8
 
@@ -31,18 +31,14 @@ jobs:
         pyinstaller --onefile --name connect_to_friend_proxy main.py
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: connect_to_friend_proxy
         path: dist/connect_to_friend_proxy.exe
 
     - name: Upload to release
       if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./dist/connect_to_friend_proxy.exe
-        asset_name: connect_to_friend_proxy.exe
-        asset_content_type: application/octet-stream 
+      run: |
+        gh release upload ${{ github.event.release.tag_name }} dist/connect_to_friend_proxy.exe 
